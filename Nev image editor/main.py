@@ -1,8 +1,13 @@
 # import required modules
+from cProfile import label
+from doctest import master
+from pydoc import text
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
+from tkinter import font
 from tkinter.filedialog import askopenfilename,asksaveasfilename
+from turtle import screensize, width
 from PIL import Image, ImageTk, ImageFilter, ImageEnhance, ImageOps
 import os
 import numpy as np
@@ -10,19 +15,33 @@ from imageio import imread
 import matplotlib.pyplot as plt
 
 # contrast border thumbnail
+#tkinter
 root = Tk()
 root.title("Simple Nevgative Photo Editor")
-root.geometry("1280x640")
+#setting window size
+width=1000
+height=680
+screenwidth = root.winfo_screenwidth()
+screenheight = root.winfo_screenheight()
+x = (screenwidth / 2) - (width / 2)
+y = (screenheight / 2 ) - (height / 2)
+root.geometry(f'{width}x{height}+{int(x)}+{int(y)}')
+root.resizable(width=False,height=False)
+root.configure(bg='#3E56B8')
+
+#logo title
+logo_title = PhotoImage(file='img/logo.png')
+root.iconphoto(False,logo_title)
 # create functions
 def selected():
     global img_path, img ,height , width ,ench
     ench = [0,1,1,1,0,0,0]
     img_path = filedialog.askopenfilename(initialdir=os.getcwd()) 
     img = Image.open(img_path)
-    img.thumbnail((400, 400))
+    img.thumbnail((480, 480))
     #img_enh = img.filter(ImageFilter.BoxBlur(0))
     img_enh = ImageTk.PhotoImage(img)
-    canvas2.create_image(600, 210, image=img_enh)
+    canvas2.create_image(250, 280, image=img_enh)
     canvas2.image=img_enh                                                                                                                                                                                                                
 
 
@@ -39,7 +58,7 @@ def brightness_choose(x):
 #contrast adj       
 def contrast_choose(x):
     global ench
-    ench[2] += x
+    ench[2] += x 
     if ench[2] > 5:
         ench[2] = 5
     if ench[2] < 0:
@@ -94,7 +113,7 @@ def re_canvas():
     global img ,ench
 
     img = Image.open(img_path)
-    img.thumbnail((400, 400))
+    img.thumbnail((480, 480))
     a = np.asarray(img)
     if ench[0] == 0 :
         pass
@@ -145,7 +164,7 @@ def re_canvas():
 
 
     imgg = ImageTk.PhotoImage(img6)
-    canvas2.create_image(600, 210, image=imgg)
+    canvas2.create_image(250, 280, image=imgg)
     canvas2.image=imgg
     print(ench)         
 
@@ -261,81 +280,150 @@ def save():
             print('save done')
             
 
-        
-# brightness
+#-----------------------------------------------------#
+Ui_blue = '#3E56B8'
+#btn addfile , save , exit #
+logo = ImageTk.PhotoImage(Image.open('img/logo.png'))
+label = Label(root,image= logo,bg=Ui_blue)
+label.place(x=50,y=20)
 
-bright = Label(root, text="Brightness:", font=("ariel 17 bold"))
-bright.place(x=8, y=8)
-br_nev = Button(root, text="-", width=3 ,font=('ariel 15 bold'), relief=GROOVE, command= lambda:brightness_choose(-0.1))
-br_nev.place(x=150, y=8)
-br_pos = Button(root, text="+", width=3, font=('ariel 15 bold'), relief=GROOVE, command= lambda:brightness_choose(0.1))
-br_pos.place(x=200, y=8)
+#------------------------------------------------------#
+img_choose_btn = PhotoImage(file='img/choose_img.png')
+btn_choose_img = Button(root,image=img_choose_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue,command=selected)
+btn_choose_img.place(x=52, y=180)
+
+#------------------------------------------------------#
+
+
+
+
+#-----------------------------------------------------#
+
+# brightness
+img_label_Brightness = ImageTk.PhotoImage(Image.open('img/label_bright.png'))
+label_brightness = Label(root,image=img_label_Brightness,bg=Ui_blue)
+label_brightness.place(x=52,y=240)
+
+img_minus_btn = PhotoImage(file='img/minus_btn.png')
+btn_minus1 = Button(root,image=img_minus_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:brightness_choose(-0.1))
+btn_minus1.place(x=200, y=240)
+
+img_plus_btn = PhotoImage(file='img/plus_btn.png')
+btn_plus1 = Button(root,image=img_plus_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:brightness_choose(0.1))
+btn_plus1.place(x=245, y=240)
+
 
 #contrast
-contra = Label(root, text="Contrast:", font=("ariel 17 bold"))
-contra.place(x=35, y=58)
-con_nev = Button(root, text="-", width=3 ,font=('ariel 15 bold'), relief=GROOVE, command= lambda:contrast_choose(-0.1))
-con_nev.place(x=150, y=58)
-con_pos = Button(root, text="+", width=3, font=('ariel 15 bold'), relief=GROOVE, command= lambda:contrast_choose(0.1))
-con_pos.place(x=200, y=58)
+img_label_Contrast = ImageTk.PhotoImage(Image.open('img/label_Contrast.png'))
+label_Contrast  = Label(root,image=img_label_Contrast,bg=Ui_blue)
+label_Contrast.place(x=52,y=285)
+
+img_minus_btn2 = PhotoImage(file='img/minus_btn.png')
+btn_minus2 = Button(root,image=img_minus_btn2,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:contrast_choose(-0.1))
+btn_minus2.place(x=200, y=285)
+
+img_plus_btn2 = PhotoImage(file='img/plus_btn.png')
+btn_plus2 = Button(root,image=img_plus_btn2,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:contrast_choose(0.1))
+btn_plus2.place(x=245, y=285)
+
 
 #color
-col = Label(root, text="Color:", font=("ariel 17 bold"))
-col.place(x=70, y=108)
-col_nev = Button(root, text="-", width=3 ,font=('ariel 15 bold'), relief=GROOVE, command= lambda:color_choose(-0.1))
-col_nev.place(x=150, y=108)
-col_pos = Button(root, text="+", width=3, font=('ariel 15 bold'), relief=GROOVE, command= lambda:color_choose(0.1))
-col_pos.place(x=200, y=108)
+img_label_Color = ImageTk.PhotoImage(Image.open('img/label_Color.png'))
+label_Color = Label(root,image=img_label_Color,bg=Ui_blue)
+label_Color.place(x=52,y=330)
+
+img_minus_btn3 = PhotoImage(file='img/minus_btn.png')
+btn_minus3 = Button(root,image=img_minus_btn3,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:color_choose(-0.1))
+btn_minus3.place(x=200, y=330)
+
+img_plus_btn3 = PhotoImage(file='img/plus_btn.png')
+btn_plus3 = Button(root,image=img_plus_btn3,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:color_choose(0.1))
+btn_plus3.place(x=245, y=330)
 
 
-# rotate
-rotate = Label(root, text="Rotate:", font=("ariel 17 bold"))
-rotate.place(x=370, y=8)
-rotate_nev = Button(root, text="<<", width=3 ,font=('ariel 15 bold'), relief=GROOVE, command= lambda:rotate_choose(90))
-rotate_nev.place(x=460, y=8)
-rotate_pos = Button(root, text=">>", width=3, font=('ariel 15 bold'), relief=GROOVE, command= lambda:rotate_choose(-90))
-rotate_pos.place(x=510, y=8)
-
-
-#flip
-flip = Label(root, text="Flip:", font=("ariel 17 bold"))
-flip.place(x=400, y=50)
-rotate_nev = Button(root, text="H", width=3 ,font=('ariel 15 bold'), relief=GROOVE, command= flip_h)
-rotate_nev.place(x=460, y=50)
-rotate_pos = Button(root, text="V", width=3, font=('ariel 15 bold'), relief=GROOVE, command= flip_v)
-rotate_pos.place(x=510, y=50)
 
 # filter
-fil = Label(root, text="Filter:", font=("ariel 17 bold"))
-fil.place(x=385, y=108)
-filter_none = Button(root, text="None", width=3 ,font=('ariel 15 bold'), relief=GROOVE, command= lambda:filter_choose(0))
-filter_none.place(x=460, y=108)
-filter_1 = Button(root, text="1", width=3, font=('ariel 15 bold'), relief=GROOVE, command= lambda:filter_choose(1))
-filter_1.place(x=510, y=108)
-filter_2 = Button(root, text="2", width=3, font=('ariel 15 bold'), relief=GROOVE, command= lambda:filter_choose(2))
-filter_2.place(x=560, y=108)
-filter_3 = Button(root, text="3", width=3, font=('ariel 15 bold'), relief=GROOVE, command= lambda:filter_choose(3))
-filter_3.place(x=610, y=108)
-filter_4 = Button(root, text="4", width=3, font=('ariel 15 bold'), relief=GROOVE, command= lambda:filter_choose(4))
-filter_4.place(x=660, y=108)
-filter_5 = Button(root, text="5", width=3, font=('ariel 15 bold'), relief=GROOVE, command= lambda:filter_choose(5))
-filter_5.place(x=710, y=108)
-filter_6 = Button(root, text="6", width=3, font=('ariel 15 bold'), relief=GROOVE, command= lambda:filter_choose(6))
-filter_6.place(x=760, y=108)
-filter_7 = Button(root, text="7", width=3, font=('ariel 15 bold'), relief=GROOVE, command= lambda:filter_choose(7))
-filter_7.place(x=810, y=108)
+Fliter_logo = ImageTk.PhotoImage(Image.open('img/Filter.png'))
+Filter = Label(root,image=Fliter_logo,bg=Ui_blue)
+Filter.place(x=45,y=380)
+
+
+img_label_default = ImageTk.PhotoImage(Image.open('img/label_Default.png'))
+btn_default = Button(root,image=img_label_default,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue,relief=GROOVE, command= lambda:filter_choose(0))
+btn_default.place(x=52,y=450)
+
+img_btn_num1 = ImageTk.PhotoImage(Image.open('img/btn_num1.png'))
+btn_num1 = Button(root,image=img_btn_num1,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue,relief=GROOVE, command= lambda:filter_choose(1))
+btn_num1.place(x=200,y=450)
+
+img_btn_num2 = ImageTk.PhotoImage(Image.open('img/btn_num2.png'))
+btn_num2 = Button(root,image=img_btn_num2,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue,relief=GROOVE, command= lambda:filter_choose(2))
+btn_num2.place(x=245,y=450)
+
+img_btn_num3 = ImageTk.PhotoImage(Image.open('img/btn_num3.png'))
+btn_num3 = Button(root,image=img_btn_num3,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue,relief=GROOVE, command= lambda:filter_choose(3))
+btn_num3.place(x=290,y=450)
+
+img_btn_num4 = ImageTk.PhotoImage(Image.open('img/btn_num4.png'))
+btn_num4 = Button(root,image=img_btn_num4,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue,relief=GROOVE, command= lambda:filter_choose(4))
+btn_num4.place(x=335,y=450)
+
+img_btn_num5= ImageTk.PhotoImage(Image.open('img/btn_num5.png'))
+btn_num5 = Button(root,image=img_btn_num5,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue,relief=GROOVE, command= lambda:filter_choose(5))
+btn_num5.place(x=200,y=500)
+
+img_btn_num6= ImageTk.PhotoImage(Image.open('img/btn_num6.png'))
+btn_num6 = Button(root,image=img_btn_num6,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue,relief=GROOVE, command= lambda:filter_choose(6))
+btn_num6.place(x=245,y=500)
+
+img_btn_num7= ImageTk.PhotoImage(Image.open('img/btn_num7.png'))
+btn_num7 = Button(root,image=img_btn_num7,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue,relief=GROOVE, command= lambda:filter_choose(7))
+btn_num7.place(x=290,y=500)
+
+
+
+#export btn
+img_export_btn = PhotoImage(file='img/export_img.png')
+btn_export_img = Button(root,image=img_export_btn,borderwidth=0,bg=Ui_blue,relief=GROOVE,activebackground=Ui_blue,command=save)
+btn_export_img.place(x=52, y=560)
+
+#exit btn
+img_exit_btn = PhotoImage(file='img/exit_img.png')
+btn_exit_img = Button(root,image=img_exit_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue,relief=GROOVE, command=root.destroy)
+btn_exit_img.place(x=180, y=560)
+
 
 
 # create canvas to display image
-canvas2 = Canvas(root, width="1240", height="420", relief=RIDGE, bd=2)
-canvas2.place(x=15, y=150)
-# create buttons
+text_preview = Label(root, text='Preview',font=('arial 17 bold'),bg='#3E56B8',fg='#FFFFFF')
+text_preview.place(x=448, y=20)
+canvas2 = Canvas(root, width="500", height="550", relief=RIDGE)
+canvas2.place(x=450, y=60)
 
 
-btn1 = Button(root, text="Select Image", font=('ariel 15 bold'), relief=GROOVE, command=selected)
-btn1.place(x=100, y=595)
-btn2 = Button(root, text="Save", width=12, font=('ariel 15 bold'), relief=GROOVE, command=save)
-btn2.place(x=280, y=595)
-btn3 = Button(root, text="Exit", width=12, font=('ariel 15 bold'), relief=GROOVE, command=root.destroy)
-btn3.place(x=460, y=595)
+# rotate
+
+img_rotate1_btn = PhotoImage(file='img/btn_rotate_left.png')
+rotate1_btn = Button(root,image=img_rotate1_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue,relief=GROOVE, command= lambda:rotate_choose(90))
+rotate1_btn.place(x=720, y=620)
+
+img_rotate2_btn = PhotoImage(file='img/btn_rotate_right.png')
+rotate2_btn = Button(root,image=img_rotate2_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue,relief=GROOVE, command= lambda:rotate_choose(-90))
+rotate2_btn.place(x=760, y=620)
+
+
+
+#flip
+img_flip1_btn = PhotoImage(file='img/btn_flip_left.png')
+flip1_btn = Button(root,image=img_flip1_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue,relief=GROOVE, command= flip_h)
+flip1_btn.place(x=620, y=620)
+
+
+img_flip2_btn = PhotoImage(file='img/btn_flip_right.png')
+flip2_btn = Button(root,image=img_flip2_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue,relief=GROOVE, command= flip_v)
+flip2_btn.place(x=660, y=620)
+#rotate_pos = Button(root, text="V", width=3, font=('ariel 15 bold'), relief=GROOVE, command= flip_v)
+#rotate_pos.place(x=510, y=50)
+
+
 root.mainloop()
