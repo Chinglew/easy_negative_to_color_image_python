@@ -1,4 +1,5 @@
 # import required modules
+import cv2
 from cProfile import label
 from doctest import master
 from pydoc import text
@@ -35,7 +36,7 @@ root.iconphoto(False,logo_title)
 # create functions
 def selected():
     global img_path, img ,height , width ,ench
-    ench = [0,1,1,1,0,0,0]
+    ench = [0,0,1,1,0,0,0]
     img_path = filedialog.askopenfilename(initialdir=os.getcwd()) 
     img = Image.open(img_path)
     img.thumbnail((480, 480))
@@ -49,11 +50,21 @@ def selected():
 def brightness_choose(x):
     global ench
     ench[1] += x
-    if ench[1] > 5:
-        ench[1] = 5
-    if ench[1] < 0:
-        ench[1] = 0
+    if ench[1] > 1:
+        ench[1] = 1
+    if ench[1] < -1:
+        ench[1] = -1
     re_canvas()
+
+def brightness(image,value):
+    hsv = cv2.cvtColor(image.astype('float32'), cv2.COLOR_RGB2HSV)
+    h, s, v = cv2.split(hsv)
+    v = cv2.add(v,value)
+    v[v > 255] = 255
+    v[v < 0] = 0
+    final_hsv = cv2.merge((h, s, v))
+    image = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2RGB)
+    return image
 
 #contrast adj       
 def contrast_choose(x):
@@ -114,56 +125,48 @@ def re_canvas():
 
     img = Image.open(img_path)
     img.thumbnail((480, 480))
-    a = np.asarray(img)
+    img = np.asarray(img)
     if ench[0] == 0 :
         pass
     elif ench[0] == 1:
-        a = image_nevTopos(a, 0.6 , 0.8 , 0.9)
-        a = (a * 255 / np.max(a)).astype('uint8')
+        img = image_nevTopos(img, 0.6 , 0.8 , 0.9)
     elif ench[0] == 2:
-        a = image_nevTopos(a, 0.65 , 0.8 , 0.9)
-        a = (a * 255 / np.max(a)).astype('uint8')
+        img = image_nevTopos(img, 0.65 , 0.8 , 0.9)
     elif ench[0] == 3:
-        a = image_nevTopos(a, 0.6 , 0.85 , 0.9)
-        a = (a * 255 / np.max(a)).astype('uint8')
+        img = image_nevTopos(img, 0.6 , 0.85 , 0.9)
     elif ench[0] == 4:
-        a = image_nevTopos(a, 0.6 , 0.8 , 0.95)
-        a = (a * 255 / np.max(a)).astype('uint8')
+        img = image_nevTopos(img, 0.6 , 0.8 , 0.95)
     elif ench[0] == 5:
-        a = image_nevTopos(a, 0.55 , 0.8 , 0.9)
-        a = (a * 255 / np.max(a)).astype('uint8')
+        img = image_nevTopos(img, 0.55 , 0.8 , 0.9)
     elif ench[0] == 6:
-        a = image_nevTopos(a, 0.6 , 0.75 , 0.8)
-        a = (a * 255 / np.max(a)).astype('uint8')
+        img = image_nevTopos(img, 0.6 , 0.75 , 0.8)
     elif ench[0] == 7:
-        a = image_nevTopos(a, 0.6 , 0.8 , 0.75)
-        a = (a * 255 / np.max(a)).astype('uint8')
+        img = image_nevTopos(img, 0.6 , 0.8 , 0.75)
     #print(a.as_integer_ratio())
-    img = Image.fromarray(a, mode="RGB")
+
+    img = brightness(img,ench[1])
+    img = (img * 255 / np.max(img)).astype('uint8')
 
 
-    img_enh = ImageEnhance.Brightness(img)
-    img1 = img_enh.enhance(ench[1])
+    img = Image.fromarray(img, mode="RGB")
 
-    img_enh = ImageEnhance.Contrast(img1)
-    img2 = img_enh.enhance(ench[2])
+    img_enh = ImageEnhance.Contrast(img)
+    img = img_enh.enhance(ench[2])
 
-    img_enh = ImageEnhance.Color(img2)
-    img3 = img_enh.enhance(ench[3])
+    img_enh = ImageEnhance.Color(img)
+    img = img_enh.enhance(ench[3])
     
-    img4 = img3.rotate(int(ench[4]), expand = 1)
+    img = img.rotate(int(ench[4]), expand = 1)
 
     if ench[5] == 1:
-        img5 = img4.transpose(Image.FLIP_LEFT_RIGHT)
-    else:
-        img5 = img4
+        img = img.transpose(Image.FLIP_LEFT_RIGHT)
+
     if ench[6] == 1:
-        img6  = img5.transpose(Image.FLIP_TOP_BOTTOM)
-    else:
-        img6  = img5
+        img  = img.transpose(Image.FLIP_TOP_BOTTOM)
 
 
-    imgg = ImageTk.PhotoImage(img6)
+
+    imgg = ImageTk.PhotoImage(img)
     canvas2.create_image(250, 280, image=imgg)
     canvas2.image=imgg
     print(ench)         
@@ -191,9 +194,9 @@ def image_nevTopos(nev_img,R,G,B):
 
     '''
     original value
-    image[:, :, 0] /= 0.6
-    image[:, :, 1] /= 0.8
-    image[:, :, 2] /= 0.9
+    image[:, :, 0] /= 0.6 //red - cyan
+    image[:, :, 1] /= 0.8 //green - magenta
+    image[:, :, 2] /= 0.9 //blue - yellow
     '''
     # auto gamma correction
 
@@ -217,7 +220,7 @@ img4 = None
 img5 = None
 img6 = None
 global ench
-ench = [0,1,1,1,0,0,0]
+ench = [0,0,1,1,0,0,0]
     # filter , brightness , contrat ,color,rotate , filp_h , filp_v
 
 
@@ -229,54 +232,47 @@ def save():
     file=asksaveasfilename(defaultextension =f".{ext}",filetypes=[("jpg file","*.jpg"),("PNG file","*.png"),("All Files","*.*")])
     if file: 
             img = Image.open(img_path)
-            a = np.asarray(img)
+            img.thumbnail((480, 480))
+            img = np.asarray(img)
             if ench[0] == 0 :
                 pass
             elif ench[0] == 1:
-                a = image_nevTopos(a, 0.6 , 0.8 , 0.9)
-                a = (a * 255 / np.max(a)).astype('uint8')
+                img = image_nevTopos(img, 0.6 , 0.8 , 0.9)
             elif ench[0] == 2:
-                a = image_nevTopos(a, 0.65 , 0.8 , 0.9)
-                a = (a * 255 / np.max(a)).astype('uint8')
+                img = image_nevTopos(img, 0.65 , 0.8 , 0.9)
             elif ench[0] == 3:
-                a = image_nevTopos(a, 0.6 , 0.85 , 0.9)
-                a = (a * 255 / np.max(a)).astype('uint8')
+                img = image_nevTopos(img, 0.6 , 0.85 , 0.9)
             elif ench[0] == 4:
-                a = image_nevTopos(a, 0.6 , 0.8 , 0.95)
-                a = (a * 255 / np.max(a)).astype('uint8')
+                img = image_nevTopos(img, 0.6 , 0.8 , 0.95)
             elif ench[0] == 5:
-                a = image_nevTopos(a, 0.55 , 0.8 , 0.9)
-                a = (a * 255 / np.max(a)).astype('uint8')
+                img = image_nevTopos(img, 0.55 , 0.8 , 0.9)
             elif ench[0] == 6:
-                a = image_nevTopos(a, 0.6 , 0.75 , 0.8)
-                a = (a * 255 / np.max(a)).astype('uint8')
+                img = image_nevTopos(img, 0.6 , 0.75 , 0.8)
             elif ench[0] == 7:
-                a = image_nevTopos(a, 0.6 , 0.8 , 0.75)
-                a = (a * 255 / np.max(a)).astype('uint8')
+                img = image_nevTopos(img, 0.6 , 0.8 , 0.75)
             #print(a.as_integer_ratio())
-            img = Image.fromarray(a, mode="RGB")
 
-            img_enh = ImageEnhance.Brightness(img)
-            img1 = img_enh.enhance(ench[1])
+            img = brightness(img,ench[1])
+            img = (img * 255 / np.max(img)).astype('uint8')
 
-            img_enh = ImageEnhance.Contrast(img1)
-            img2 = img_enh.enhance(ench[2])
 
-            img_enh = ImageEnhance.Color(img2)
-            img3 = img_enh.enhance(ench[3])
+            img = Image.fromarray(img, mode="RGB")
+
+            img_enh = ImageEnhance.Contrast(img)
+            img = img_enh.enhance(ench[2])
+
+            img_enh = ImageEnhance.Color(img)
+            img = img_enh.enhance(ench[3])
             
-            img4 = img3.rotate(int(ench[4]), expand = 1)
+            img = img.rotate(int(ench[4]), expand = 1)
 
             if ench[5] == 1:
-                img5 = img4.transpose(Image.FLIP_LEFT_RIGHT)
-            else:
-                img5 = img4
-            if ench[6] == 1:
-                img6 = img5.transpose(Image.FLIP_TOP_BOTTOM)
-            else:
-                img6 = img5
+                img = img.transpose(Image.FLIP_LEFT_RIGHT)
 
-            img6.save(file)
+            if ench[6] == 1:
+                img  = img.transpose(Image.FLIP_TOP_BOTTOM)
+
+            img.save(file)
             print('save done')
             
 
@@ -305,11 +301,11 @@ label_brightness = Label(root,image=img_label_Brightness,bg=Ui_blue)
 label_brightness.place(x=52,y=240)
 
 img_minus_btn = PhotoImage(file='img/minus_btn.png')
-btn_minus1 = Button(root,image=img_minus_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:brightness_choose(-0.1))
+btn_minus1 = Button(root,image=img_minus_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:brightness_choose(-0.025))
 btn_minus1.place(x=200, y=240)
 
 img_plus_btn = PhotoImage(file='img/plus_btn.png')
-btn_plus1 = Button(root,image=img_plus_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:brightness_choose(0.1))
+btn_plus1 = Button(root,image=img_plus_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:brightness_choose(0.025))
 btn_plus1.place(x=245, y=240)
 
 
