@@ -52,9 +52,19 @@ def brightness_choose(x):
     ench[1] += x
     if ench[1] > 100:
         ench[1] = 100
-    if ench[1] < -50:
-        ench[1] = -50
+    if ench[1] < -100:
+        ench[1] = -100
     re_canvas()
+
+def brightness(image,value):
+   hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+   h, s, v = cv2.split(hsv)
+   v = cv2.add(v,value)
+   v[v > 255] = 255
+   v[v < 0] = 0
+   final_hsv = cv2.merge((h, s, v))
+   image = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2RGB)
+   return image
 
 #contrast adj       
 def contrast_choose(x):
@@ -134,9 +144,11 @@ def re_canvas():
         img = image_nevTopos(img, 0.6 , 0.8 , 0.75)
     #print(a.as_integer_ratio())
 
-    img = (img * 255 / np.max(img)).astype('uint8')
+    
 
-    img = cv2.convertScaleAbs(img, alpha=ench[2], beta=ench[1])
+    img = (img * 255 / np.max(img)).astype('uint8')
+    img = brightness(img,ench[1])
+    img = cv2.convertScaleAbs(img, alpha=ench[2], beta=0)
 
     img = Image.fromarray(img, mode="RGB")
 
@@ -239,8 +251,8 @@ def save():
                 img = image_nevTopos(img, 0.6 , 0.8 , 0.75)
             #print(a.as_integer_ratio())
             img = (img * 255 / np.max(img)).astype('uint8')
-
-            img = cv2.convertScaleAbs(img, alpha=ench[2], beta=ench[1])
+            img = brightness(img,ench[1])
+            img = cv2.convertScaleAbs(img, alpha=ench[2], beta=0)
 
             img = Image.fromarray(img, mode="RGB")
 
