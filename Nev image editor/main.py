@@ -36,7 +36,7 @@ root.iconphoto(False,logo_title)
 # create functions
 def selected():
     global img_path, img ,height , width ,ench
-    ench = [0,0,1,1,0,0,0]
+    ench = [0,1,1,1,0,0,0]
     img_path = filedialog.askopenfilename(initialdir=os.getcwd()) 
     img = Image.open(img_path)
     img.thumbnail((480, 480))
@@ -50,21 +50,11 @@ def selected():
 def brightness_choose(x):
     global ench
     ench[1] += x
-    if ench[1] > 1:
-        ench[1] = 1
-    if ench[1] < -1:
-        ench[1] = -1
+    if ench[1] > 100:
+        ench[1] = 100
+    if ench[1] < -50:
+        ench[1] = -50
     re_canvas()
-
-def brightness(image,value):
-    hsv = cv2.cvtColor(image.astype('float32'), cv2.COLOR_RGB2HSV)
-    h, s, v = cv2.split(hsv)
-    v = cv2.add(v,value)
-    v[v > 255] = 255
-    v[v < 0] = 0
-    final_hsv = cv2.merge((h, s, v))
-    image = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2RGB)
-    return image
 
 #contrast adj       
 def contrast_choose(x):
@@ -144,14 +134,11 @@ def re_canvas():
         img = image_nevTopos(img, 0.6 , 0.8 , 0.75)
     #print(a.as_integer_ratio())
 
-    img = brightness(img,ench[1])
     img = (img * 255 / np.max(img)).astype('uint8')
 
+    img = cv2.convertScaleAbs(img, alpha=ench[2], beta=ench[1])
 
     img = Image.fromarray(img, mode="RGB")
-
-    img_enh = ImageEnhance.Contrast(img)
-    img = img_enh.enhance(ench[2])
 
     img_enh = ImageEnhance.Color(img)
     img = img_enh.enhance(ench[3])
@@ -220,7 +207,7 @@ img4 = None
 img5 = None
 img6 = None
 global ench
-ench = [0,0,1,1,0,0,0]
+ench = [0,1,1,1,0,0,0]
     # filter , brightness , contrat ,color,rotate , filp_h , filp_v
 
 
@@ -251,15 +238,11 @@ def save():
             elif ench[0] == 7:
                 img = image_nevTopos(img, 0.6 , 0.8 , 0.75)
             #print(a.as_integer_ratio())
-
-            img = brightness(img,ench[1])
             img = (img * 255 / np.max(img)).astype('uint8')
 
+            img = cv2.convertScaleAbs(img, alpha=ench[2], beta=ench[1])
 
             img = Image.fromarray(img, mode="RGB")
-
-            img_enh = ImageEnhance.Contrast(img)
-            img = img_enh.enhance(ench[2])
 
             img_enh = ImageEnhance.Color(img)
             img = img_enh.enhance(ench[3])
@@ -301,11 +284,11 @@ label_brightness = Label(root,image=img_label_Brightness,bg=Ui_blue)
 label_brightness.place(x=52,y=240)
 
 img_minus_btn = PhotoImage(file='img/minus_btn.png')
-btn_minus1 = Button(root,image=img_minus_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:brightness_choose(-0.025))
+btn_minus1 = Button(root,image=img_minus_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:brightness_choose(-2))
 btn_minus1.place(x=200, y=240)
 
 img_plus_btn = PhotoImage(file='img/plus_btn.png')
-btn_plus1 = Button(root,image=img_plus_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:brightness_choose(0.025))
+btn_plus1 = Button(root,image=img_plus_btn,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:brightness_choose(2))
 btn_plus1.place(x=245, y=240)
 
 
@@ -315,11 +298,11 @@ label_Contrast  = Label(root,image=img_label_Contrast,bg=Ui_blue)
 label_Contrast.place(x=52,y=285)
 
 img_minus_btn2 = PhotoImage(file='img/minus_btn.png')
-btn_minus2 = Button(root,image=img_minus_btn2,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:contrast_choose(-0.1))
+btn_minus2 = Button(root,image=img_minus_btn2,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:contrast_choose(-0.05))
 btn_minus2.place(x=200, y=285)
 
 img_plus_btn2 = PhotoImage(file='img/plus_btn.png')
-btn_plus2 = Button(root,image=img_plus_btn2,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:contrast_choose(0.1))
+btn_plus2 = Button(root,image=img_plus_btn2,borderwidth=0,bg=Ui_blue,activebackground=Ui_blue, relief=GROOVE,command=lambda:contrast_choose(0.05))
 btn_plus2.place(x=245, y=285)
 
 
